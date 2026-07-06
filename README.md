@@ -1,6 +1,6 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+** is a Python pet-care planning system. It helps a busy owner stay on top of daily care by modeling **owners, pets, and tasks** as classes and using a **`Scheduler`** to sort tasks by priority, fit them into the owner's available time, and produce an explained daily plan across all of their pets. Run the [`main.py`](main.py) command-line demo to see the whole workflow end to end.
 
 ## Scenario
 
@@ -10,17 +10,17 @@ A busy pet owner needs help staying consistent with pet care. They want an assis
 - Consider constraints (time available, priority, owner preferences)
 - Produce a daily plan and explain why it chose that plan
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+The system was designed UML-first ([`diagrams/uml.mmd`](diagrams/uml.mmd)), implemented in [`pawpal_system.py`](pawpal_system.py), verified with a `pytest` suite, and demonstrated through the [`main.py`](main.py) CLI.
 
-## What you will build
+## What PawPal+ does
 
-Your final app should:
+PawPal+ can:
 
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+- Model an owner, their pets, and each pet's care tasks (duration, priority, and due time)
+- Sort tasks across **all** pets by priority, breaking ties by earliest due time
+- Generate a daily plan that fits the owner's available time and explains what it scheduled — and what it skipped
+- Mark tasks complete and re-plan the day
+- Back all of this with a `pytest` suite covering the key scheduling behaviors
 
 ## 🧱 System Design
 
@@ -40,6 +40,13 @@ The **`Scheduler`** — the class that plans across *all* of an owner's pets —
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+### Running the demo and tests
+
+```bash
+python main.py       # run the CLI demo (builds the sample world and plans the day)
+pytest               # run the full test suite from the project root
 ```
 
 ### Suggested workflow

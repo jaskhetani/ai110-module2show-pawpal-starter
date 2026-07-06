@@ -30,8 +30,16 @@ cross-pet.
 
 **b. Design changes**
 
-*(To be completed as implementation proceeds — this section will record any
-divergence between the diagram above and the final code.)*
+The class structure held up well against the original diagram, but two
+refinements emerged during implementation:
+
+1. I split *selection* from *presentation* in the planner. `build_daily_plan()`
+   still **chooses** tasks by priority (via `filter_by_time_budget()`), but it
+   returns them sorted by `due_time` so the plan reads chronologically like a
+   real daily schedule. The diagram originally implied a single ordering.
+2. I added `explain_plan()` to the `Scheduler` to satisfy the scenario's "explain
+   why it chose that plan" goal — it reports both the scheduled tasks and the
+   ones skipped for being over budget. The UML was updated to include it.
 
 ---
 
@@ -74,13 +82,26 @@ a user who just wants their pet's essentials handled first.
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI across the whole project: brainstorming the class breakdown for the
+UML, turning that design into Python classes, writing the `pytest` suite, and
+generating the CLI demo. The most useful prompting move was giving the AI the
+**full grading rubric up front** and asking it to produce a *commit-by-commit
+plan* before writing any code. That forced the work into small, reviewable
+steps. The second most useful instruction was "keep the docs in sync with the
+code in each commit" — it stopped documentation from drifting away from what
+the code actually did.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+One suggestion I pushed back on was framing the scheduler as producing an
+"optimal" daily plan. The implementation is a **greedy** fit, which is *not*
+globally optimal (it can leave a few minutes unused), so I kept the honest
+framing in the README and reflection instead of overselling it. I verified the
+AI's code rather than trusting it: I ran `python main.py` and read the output
+by hand (checking that high-priority tasks came first, that the over-budget
+task was correctly skipped, and that completing a task freed time on the
+re-plan), and I encoded those expectations as assertions in
+`tests/test_pawpal.py` so the behavior is checked automatically.
 
 ---
 
@@ -88,13 +109,24 @@ a user who just wants their pet's essentials handled first.
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+The suite (`tests/test_pawpal.py`, 10 tests) covers the behaviors the rest of
+the system depends on: `mark_complete()` flipping status, `priority_weight()`
+ranking (including an unknown label falling back to 0), `add_task()` stamping
+the pet's name, `pending_tasks()` excluding completed work, `all_tasks()`
+flattening across pets, priority sorting with a due-time tie-break, the
+time-budget filter never exceeding the budget, chronological plan ordering,
+and completing a task freeing budget for a previously-skipped one. These matter
+because the whole daily plan is built on correct sorting and filtering — if
+those are wrong, everything downstream is wrong.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+I'm confident the core behaviors are correct: all 10 tests pass and the CLI
+output matches what I expect by hand. If I had more time I'd add edge-case
+tests for: a task whose duration exceeds the entire budget, an owner with
+`available_minutes = 0`, two tasks that share both priority *and* due time
+(stable-sort behavior), and `remove_task()` when two tasks share a
+description.
 
 ---
 
@@ -102,12 +134,24 @@ a user who just wants their pet's essentials handled first.
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I'm most satisfied with the clean separation of responsibilities — `Task`,
+`Pet`, and `Owner` are simple data-and-behavior classes, and *only* the
+`Scheduler` reasons across multiple pets. Pointing the `Scheduler` at the
+`Owner` (rather than a single `Pet`) is what made the "across all pets"
+requirement fall out naturally instead of being bolted on.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+The greedy time-budget fit is the obvious target. In another iteration I'd add
+real **time-blocking** (assign start/end times and detect overlaps) and
+smarter packing so the day isn't left with unused gaps, plus support for
+**recurring tasks** and **data persistence** so pets and tasks survive between
+runs.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+Designing the UML first paid off: because the class boundaries were decided
+before any code, implementation and testing were mostly mechanical. And AI is
+most valuable when you hand it a clear specification (the rubric) and then make
+it *prove* its work — running the demo and writing tests caught the difference
+between code that looks right and code that is right.
