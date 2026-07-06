@@ -4,13 +4,34 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+My initial UML design (`diagrams/uml.mmd`) uses four classes with a clear
+ownership hierarchy:
+
+- **Task** — the smallest unit of work. It holds `description`, `due_time`,
+  `duration_minutes`, `priority`, and a `completed` flag, plus a `pet_name`
+  back-reference so a task can be traced to its pet once it leaves the pet's
+  list. Its responsibility is to *describe one care activity and know whether
+  it is done* (`mark_complete()`, `priority_weight()`).
+- **Pet** — owns a collection of `Task`s. Responsible for *managing its own
+  tasks* (`add_task()`, `remove_task()`, `list_tasks()`, `pending_tasks()`).
+- **Owner** — owns a collection of `Pet`s plus a daily time budget
+  (`available_minutes`). Responsible for *modeling the human and their pets*
+  (`add_pet()`, `get_pet()`, `all_tasks()` to flatten every pet's tasks).
+- **Scheduler** — holds a reference to an `Owner` and is the only class that
+  reasons *across multiple pets*. Responsible for the algorithmic work:
+  ordering tasks (`sort_by_priority()`), fitting them into the owner's time
+  budget (`filter_by_time_budget()`), producing a daily plan
+  (`build_daily_plan()`), and explaining it (`explain_plan()`).
+
+Relationships: `Owner "1" --> "*" Pet`, `Pet "1" --> "*" Task`, and
+`Scheduler "1" --> "1" Owner`. Keeping the Scheduler pointed at the Owner (not
+at a single Pet) is what forces the scheduling logic to be genuinely
+cross-pet.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+*(To be completed as implementation proceeds — this section will record any
+divergence between the diagram above and the final code.)*
 
 ---
 
