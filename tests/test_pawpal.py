@@ -7,7 +7,7 @@ Run from the project root with:
 
 import pytest
 
-from pawpal_system import Owner, Pet, Scheduler, Task
+from pawpal_system import Owner, Pet, Scheduler, Task, load_owner, save_owner
 
 
 @pytest.fixture
@@ -114,3 +114,34 @@ def test_completed_tasks_free_budget_for_others(owner):
     replanned = [t.description for t in scheduler.build_daily_plan()]
     assert "Walk" not in replanned
     assert "Play" in replanned
+
+
+# --- Persistence -----------------------------------------------------------
+
+def test_owner_dict_round_trip_preserves_data(owner):
+    owner.get_pet("Rex").list_tasks()[0].mark_complete()  # Walk -> completed
+    clone = Owner.from_dict(owner.to_dict())
+
+    assert clone.name == owner.name
+    assert clone.available_minutes == owner.available_minutes
+    assert len(clone.pets) == len(owner.pets)
+    assert len(clone.all_tasks()) == len(owner.all_tasks())
+
+    # Completion status and the pet back-reference survive the round trip.
+    walk = next(t for t in clone.all_tasks() if t.description == "Walk")
+    assert walk.completed is True
+    assert walk.pet_name == "Rex"
+
+
+def test_save_and_load_owner_from_file(owner, tmp_path):
+    path = tmp_path / "data.json"
+    save_owner(owner, str(path))
+    loaded = load_owner(str(path))
+
+    assert loaded is not None
+    assert [p.name for p in loaded.pets] == [p.name for p in owner.pets]
+    assert len(loaded.all_tasks()) == 4
+
+
+def test_load_owner_missing_file_returns_none(tmp_path):
+    assert load_owner(str(tmp_path / "does_not_exist.json")) is None

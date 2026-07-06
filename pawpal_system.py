@@ -13,6 +13,8 @@ added on top of these classes.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import List, Optional
 
 # Priority labels ordered from most to least urgent, with the numeric weight
@@ -47,6 +49,27 @@ class Task:
     def priority_weight(self) -> int:
         """Return the numeric weight of this task's priority (high=3 .. low=1)."""
         return PRIORITY_WEIGHTS.get(self.priority, 0)
+
+    def to_dict(self) -> dict:
+        """Serialize this task to a plain dict (``pet_name`` is re-derived on load)."""
+        return {
+            "description": self.description,
+            "due_time": self.due_time,
+            "duration_minutes": self.duration_minutes,
+            "priority": self.priority,
+            "completed": self.completed,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Task":
+        """Rebuild a task from a dict produced by :meth:`to_dict`."""
+        return cls(
+            description=data["description"],
+            due_time=data["due_time"],
+            duration_minutes=data["duration_minutes"],
+            priority=data.get("priority", "medium"),
+            completed=data.get("completed", False),
+        )
 
     def __str__(self) -> str:
         box = "[x]" if self.completed else "[ ]"
@@ -91,6 +114,22 @@ class Pet:
         """Return only the tasks that are not yet completed."""
         return [task for task in self.tasks if not task.completed]
 
+    def to_dict(self) -> dict:
+        """Serialize this pet and its tasks to a plain dict."""
+        return {
+            "name": self.name,
+            "species": self.species,
+            "tasks": [task.to_dict() for task in self.tasks],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Pet":
+        """Rebuild a pet (and its tasks) from a dict produced by :meth:`to_dict`."""
+        pet = cls(data["name"], data["species"])
+        for task_data in data.get("tasks", []):
+            pet.add_task(Task.from_dict(task_data))
+        return pet
+
     def __str__(self) -> str:
         return f"{self.name} ({self.species}) - {len(self.tasks)} task(s)"
 
@@ -120,6 +159,22 @@ class Owner:
         for pet in self.pets:
             tasks.extend(pet.tasks)
         return tasks
+
+    def to_dict(self) -> dict:
+        """Serialize this owner and all of their pets to a plain dict."""
+        return {
+            "name": self.name,
+            "available_minutes": self.available_minutes,
+            "pets": [pet.to_dict() for pet in self.pets],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Owner":
+        """Rebuild an owner (and all pets/tasks) from a dict produced by :meth:`to_dict`."""
+        owner = cls(data["name"], data.get("available_minutes", 120))
+        for pet_data in data.get("pets", []):
+            owner.add_pet(Pet.from_dict(pet_data))
+        return owner
 
     def __str__(self) -> str:
         return f"{self.name} - {len(self.pets)} pet(s)"
@@ -209,3 +264,23 @@ class Scheduler:
                     f"({task.duration_minutes} min, {task.priority})"
                 )
         return "\n".join(lines)
+
+
+# --- Persistence -----------------------------------------------------------
+# JSON save/load so an owner's pets and tasks survive between application runs.
+
+DEFAULT_DATA_FILE = "pawpal_data.json"
+
+
+def save_owner(owner: Owner, path: str = DEFAULT_DATA_FILE) -> None:
+    """Write an owner (with all pets and tasks) to a JSON file."""
+    Path(path).write_text(json.dumps(owner.to_dict(), indent=2), encoding="utf-8")
+
+
+def load_owner(path: str = DEFAULT_DATA_FILE) -> Optional[Owner]:
+    """Load an owner from a JSON file, or return ``None`` if it does not exist."""
+    data_path = Path(path)
+    if not data_path.exists():
+        return None
+    data = json.loads(data_path.read_text(encoding="utf-8"))
+    return Owner.from_dict(data)

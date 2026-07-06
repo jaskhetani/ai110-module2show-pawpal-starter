@@ -112,6 +112,9 @@ Daily plan for Jordan (120 min available):
   5. 18:00  Biscuit: Evening walk (30 min, medium priority)
   6. 19:00  Mochi: Brush coat (15 min, low priority)
   Time used: 95/120 min.
+
+------------------------------------------------------------
+Saved to pawpal_data.json and reloaded: 2 pets, 7 tasks, 'Morning walk' still marked complete = True.
 ```
 
 ## 🧪 Testing PawPal+
@@ -156,6 +159,17 @@ The **`Scheduler`** holds a reference to an `Owner` and plans across **all** of 
 | Recurring tasks | _planned (stretch)_ | Daily vs. weekly repetition. |
 
 Both `sort_by_priority()` and `filter_by_time_budget()` read from `owner.all_tasks()`, so they consider tasks from **every** pet, not just one.
+
+## 💾 Data Persistence
+
+PawPal+ can save an owner — with every pet and task — to JSON and load it back, so state survives between runs.
+
+- **Save:** `save_owner(owner, "pawpal_data.json")` serializes the owner via `Owner.to_dict()` → `Pet.to_dict()` → `Task.to_dict()` and writes indented JSON.
+- **Load:** `load_owner("pawpal_data.json")` reads the file and rebuilds the objects with the matching `from_dict()` classmethods (returning `None` if the file doesn't exist). Because `Pet.from_dict()` re-runs `add_task()`, each task's `pet_name` back-reference is restored automatically.
+
+The [`main.py`](main.py) demo saves after planning and immediately reloads to confirm the round trip — including that a completed task stays completed. The generated `pawpal_data.json` is git-ignored.
+
+**Files modified for this feature:** [`pawpal_system.py`](pawpal_system.py) (`to_dict`/`from_dict` on `Task`/`Pet`/`Owner` + module-level `save_owner`/`load_owner`), [`main.py`](main.py) (save/reload demo), [`tests/test_pawpal.py`](tests/test_pawpal.py) (round-trip, file, and missing-file tests), and `.gitignore`.
 
 ## 📸 Demo Walkthrough
 

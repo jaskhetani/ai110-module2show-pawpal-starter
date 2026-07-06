@@ -1,6 +1,7 @@
 classDiagram
     %% PawPal+ core OOP design.
     %% This diagram is kept in sync with pawpal_system.py.
+    %% Module-level JSON helpers: save_owner(owner, path) and load_owner(path) -> Owner.
 
     class Task {
         +str description
@@ -11,6 +12,8 @@ classDiagram
         +str pet_name
         +mark_complete() None
         +priority_weight() int
+        +to_dict() dict
+        +from_dict(dict) Task
         +__str__() str
     }
 
@@ -22,6 +25,8 @@ classDiagram
         +remove_task(str description) bool
         +list_tasks() List~Task~
         +pending_tasks() List~Task~
+        +to_dict() dict
+        +from_dict(dict) Pet
     }
 
     class Owner {
@@ -31,6 +36,8 @@ classDiagram
         +add_pet(Pet pet) None
         +get_pet(str name) Pet
         +all_tasks() List~Task~
+        +to_dict() dict
+        +from_dict(dict) Owner
     }
 
     class Scheduler {

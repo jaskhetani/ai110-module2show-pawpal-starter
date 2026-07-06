@@ -7,7 +7,15 @@ an explained daily plan. Run with:
     python main.py
 """
 
-from pawpal_system import Owner, Pet, Scheduler, Task
+from pawpal_system import (
+    DEFAULT_DATA_FILE,
+    Owner,
+    Pet,
+    Scheduler,
+    Task,
+    load_owner,
+    save_owner,
+)
 
 
 def build_demo_owner() -> Owner:
@@ -66,6 +74,18 @@ def main() -> None:
             task.mark_complete()
     print("-" * 60)
     print(scheduler.explain_plan())
+
+    # Persistence: save the current state to JSON and load it back to prove
+    # pets, tasks, and completion status survive between runs.
+    print("\n" + "-" * 60)
+    save_owner(owner, DEFAULT_DATA_FILE)
+    reloaded = load_owner(DEFAULT_DATA_FILE)
+    walk_done = any(
+        t.completed for t in reloaded.all_tasks() if t.description == "Morning walk"
+    )
+    print(f"Saved to {DEFAULT_DATA_FILE} and reloaded: "
+          f"{len(reloaded.pets)} pets, {len(reloaded.all_tasks())} tasks, "
+          f"'Morning walk' still marked complete = {walk_done}.")
 
 
 if __name__ == "__main__":

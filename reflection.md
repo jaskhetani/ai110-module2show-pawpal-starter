@@ -145,8 +145,8 @@ requirement fall out naturally instead of being bolted on.
 The greedy time-budget fit is the obvious target. In another iteration I'd add
 real **time-blocking** (assign start/end times and detect overlaps) and
 smarter packing so the day isn't left with unused gaps, plus support for
-**recurring tasks** and **data persistence** so pets and tasks survive between
-runs.
+**recurring tasks**. (JSON **data persistence** was added afterward as a
+stretch feature — see the README's Data Persistence section.)
 
 **c. Key takeaway**
 
