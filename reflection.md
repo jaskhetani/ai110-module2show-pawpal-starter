@@ -109,19 +109,22 @@ re-plan), and I encoded those expectations as assertions in
 
 **a. What you tested**
 
-The suite (`tests/test_pawpal.py`, 10 tests) covers the behaviors the rest of
+The suite (`tests/test_pawpal.py`, 21 tests) covers the behaviors the rest of
 the system depends on: `mark_complete()` flipping status, `priority_weight()`
 ranking (including an unknown label falling back to 0), `add_task()` stamping
 the pet's name, `pending_tasks()` excluding completed work, `all_tasks()`
 flattening across pets, priority sorting with a due-time tie-break, the
 time-budget filter never exceeding the budget, chronological plan ordering,
-and completing a task freeing budget for a previously-skipped one. These matter
-because the whole daily plan is built on correct sorting and filtering — if
-those are wrong, everything downstream is wrong.
+and completing a task freeing budget for a previously-skipped one. The stretch
+features are covered too: cross-pet conflict detection (and its exclusion of
+completed tasks), the next-available-slot finder (earliest gap, skipping
+occupied blocks, and none-when-full), JSON round-trips, and the formatting
+helpers. These matter because the whole daily plan is built on correct sorting
+and filtering — if those are wrong, everything downstream is wrong.
 
 **b. Confidence**
 
-I'm confident the core behaviors are correct: all 10 tests pass and the CLI
+I'm confident the core behaviors are correct: all 21 tests pass and the CLI
 output matches what I expect by hand. If I had more time I'd add edge-case
 tests for: a task whose duration exceeds the entire budget, an owner with
 `available_minutes = 0`, two tasks that share both priority *and* due time
@@ -143,10 +146,11 @@ requirement fall out naturally instead of being bolted on.
 **b. What you would improve**
 
 The greedy time-budget fit is the obvious target — smarter packing would avoid
-leaving the day with unused gaps. Further work would add **recurring tasks**
-(daily/weekly repetition) and a fully wired-up Streamlit UI. (**Time-blocking
-conflict detection**, a **next-available-slot** finder, and JSON **data
-persistence** were added afterward as stretch features — see the README.)
+leaving the day with unused gaps. The main thing still missing is **recurring
+tasks** (daily/weekly repetition). (**Time-blocking conflict detection**, a
+**next-available-slot** finder, JSON **data persistence**, a `tabulate`/emoji
+**formatted CLI**, and a **wired-up Streamlit UI** were all added as stretch
+features — see the README.)
 
 **c. Key takeaway**
 
