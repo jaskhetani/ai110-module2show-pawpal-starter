@@ -54,14 +54,57 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Below is the output of `python main.py`, which builds one owner (Jordan), two pets (Biscuit the dog and Mochi the cat), and seven tasks, then uses the `Scheduler` to sort and plan the day:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+============================================================
+PawPal+ - Daily Care Planner
+============================================================
+Owner: Jordan (daily time budget: 120 min)
+  Biscuit (dog) - 4 task(s)
+    - [ ] Breakfast (10 min, high, due 07:30)
+    - [ ] Morning walk (30 min, high, due 08:00)
+    - [ ] Fetch / enrichment (25 min, low, due 16:00)
+    - [ ] Evening walk (30 min, medium, due 18:00)
+  Mochi (cat) - 3 task(s)
+    - [ ] Litter cleanup (10 min, medium, due 07:45)
+    - [ ] Thyroid meds (5 min, high, due 09:00)
+    - [ ] Brush coat (15 min, low, due 19:00)
+
+------------------------------------------------------------
+All tasks across pets, sorted by priority then due time:
+------------------------------------------------------------
+  Biscuit  [ ] Breakfast (10 min, high, due 07:30)
+  Biscuit  [ ] Morning walk (30 min, high, due 08:00)
+  Mochi    [ ] Thyroid meds (5 min, high, due 09:00)
+  Mochi    [ ] Litter cleanup (10 min, medium, due 07:45)
+  Biscuit  [ ] Evening walk (30 min, medium, due 18:00)
+  Biscuit  [ ] Fetch / enrichment (25 min, low, due 16:00)
+  Mochi    [ ] Brush coat (15 min, low, due 19:00)
+
+------------------------------------------------------------
+Daily plan for Jordan (120 min available):
+  1. 07:30  Biscuit: Breakfast (10 min, high priority)
+  2. 07:45  Mochi: Litter cleanup (10 min, medium priority)
+  3. 08:00  Biscuit: Morning walk (30 min, high priority)
+  4. 09:00  Mochi: Thyroid meds (5 min, high priority)
+  5. 16:00  Biscuit: Fetch / enrichment (25 min, low priority)
+  6. 18:00  Biscuit: Evening walk (30 min, medium priority)
+  Time used: 110/120 min.
+  Skipped (over budget):
+    - Mochi: Brush coat (15 min, low)
+
+------------------------------------------------------------
+Marking Biscuit's 'Morning walk' complete and re-planning...
+------------------------------------------------------------
+Daily plan for Jordan (120 min available):
+  1. 07:30  Biscuit: Breakfast (10 min, high priority)
+  2. 07:45  Mochi: Litter cleanup (10 min, medium priority)
+  3. 09:00  Mochi: Thyroid meds (5 min, high priority)
+  4. 16:00  Biscuit: Fetch / enrichment (25 min, low priority)
+  5. 18:00  Biscuit: Evening walk (30 min, medium priority)
+  6. 19:00  Mochi: Brush coat (15 min, low priority)
+  Time used: 95/120 min.
 ```
 
 ## 🧪 Testing PawPal+
@@ -96,12 +139,12 @@ Both `sort_by_priority()` and `filter_by_time_budget()` read from `owner.all_tas
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Follow along with the CLI demo (`python main.py`):
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Build the world.** `build_demo_owner()` creates owner *Jordan* with a 120-minute daily budget, two pets (*Biscuit* the dog, *Mochi* the cat), and seven tasks split across them.
+2. **See the roster.** The demo prints each pet and its tasks so you can see the raw, unsorted care list.
+3. **Sort across pets.** `Scheduler.sort_by_priority()` merges every pet's tasks into one list ordered by priority (high → low), breaking ties by earliest due time.
+4. **Plan the day.** `Scheduler.explain_plan()` greedily fits tasks into the 120-minute budget, prints them in chronological order, and lists what was skipped — here *Brush coat* is dropped because only 10 minutes remain.
+5. **Complete and re-plan.** The demo marks Biscuit's *Morning walk* complete; because completed tasks leave the plan, 30 minutes free up and the re-plan now includes *Brush coat* (95/120 min used).
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
