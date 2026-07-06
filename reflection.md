@@ -39,13 +39,34 @@ divergence between the diagram above and the final code.)*
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three constraints, in this order of importance:
+
+1. **Priority** — each task is `high`, `medium`, or `low`; `priority_weight()`
+   turns that into a number so the sort can put urgent care first.
+2. **Time budget** — the owner has a daily `available_minutes` cap, and
+   `filter_by_time_budget()` refuses to schedule more work than fits.
+3. **Due time** — used as the tie-breaker when sorting, and to order the final
+   plan chronologically so it reads like a real daily schedule.
+
+I decided priority mattered most because pet care has genuinely urgent items
+(medication, feeding) that should never be dropped in favor of optional ones
+(enrichment, extra grooming). Time is the hard constraint that makes the
+problem interesting — without a budget, "the plan" is just "do everything."
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The filter is **greedy**: it walks tasks in priority order and grabs each one
+that still fits, rather than searching for the combination of tasks that packs
+the day most tightly (a knapsack-style optimum). This means it can leave a few
+minutes unused — e.g. it may keep one 45-minute high-priority walk and skip a
+40-minute medium task even though two 20-minute tasks would have filled the
+slot better.
+
+That tradeoff is reasonable here because an owner reasons the same way ("do the
+important things first"), the result is predictable and easy to explain via
+`explain_plan()`, and it runs in a simple `O(n log n)` sort instead of an
+exponential search. Optimal packing would be surprising and hard to justify to
+a user who just wants their pet's essentials handled first.
 
 ---
 

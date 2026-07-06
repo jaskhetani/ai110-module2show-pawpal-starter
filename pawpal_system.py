@@ -123,3 +123,89 @@ class Owner:
 
     def __str__(self) -> str:
         return f"{self.name} - {len(self.pets)} pet(s)"
+
+
+class Scheduler:
+    """Plans care tasks across *all* of an owner's pets.
+
+    The scheduler is the only class that reasons over more than one pet. It
+    provides two core algorithmic features -- a multi-key sort and a
+    time-budget filter -- and combines them into a daily plan.
+    """
+
+    def __init__(self, owner: Owner) -> None:
+        self.owner = owner
+
+    def sort_by_priority(self) -> List[Task]:
+        """Return every pet's tasks sorted by priority, then due time.
+
+        Highest priority first (high -> medium -> low); ties are broken by the
+        earliest ``due_time``. This spans all pets via ``owner.all_tasks()``.
+        """
+        return sorted(
+            self.owner.all_tasks(),
+            key=lambda task: (-task.priority_weight(), task.due_time),
+        )
+
+    def filter_by_time_budget(self, minutes: Optional[int] = None) -> List[Task]:
+        """Greedily select pending tasks that fit within a time budget.
+
+        Walks the tasks in priority order and keeps adding them until the
+        budget (defaulting to the owner's ``available_minutes``) is exhausted,
+        skipping any task that no longer fits. Completed tasks are ignored.
+        """
+        if minutes is None:
+            minutes = self.owner.available_minutes
+
+        remaining = minutes
+        selected: List[Task] = []
+        for task in self.sort_by_priority():
+            if task.completed:
+                continue
+            if task.duration_minutes <= remaining:
+                selected.append(task)
+                remaining -= task.duration_minutes
+        return selected
+
+    def build_daily_plan(self) -> List[Task]:
+        """Return the chosen tasks for today, ordered chronologically.
+
+        Selection is priority-driven (via :meth:`filter_by_time_budget`), but
+        the returned plan is sorted by ``due_time`` so it reads like a schedule
+        the owner can follow through the day.
+        """
+        selected = self.filter_by_time_budget(self.owner.available_minutes)
+        return sorted(selected, key=lambda task: task.due_time)
+
+    def explain_plan(self) -> str:
+        """Return a human-readable daily plan plus the reasoning behind it."""
+        plan = self.build_daily_plan()
+        used = sum(task.duration_minutes for task in plan)
+
+        lines = [
+            f"Daily plan for {self.owner.name} "
+            f"({self.owner.available_minutes} min available):"
+        ]
+        if not plan:
+            lines.append("  (nothing fits in the available time)")
+        for i, task in enumerate(plan, start=1):
+            lines.append(
+                f"  {i}. {task.due_time}  {task.pet_name}: {task.description} "
+                f"({task.duration_minutes} min, {task.priority} priority)"
+            )
+        lines.append(f"  Time used: {used}/{self.owner.available_minutes} min.")
+
+        scheduled = {id(task) for task in plan}
+        skipped = [
+            task
+            for task in self.sort_by_priority()
+            if not task.completed and id(task) not in scheduled
+        ]
+        if skipped:
+            lines.append("  Skipped (over budget):")
+            for task in skipped:
+                lines.append(
+                    f"    - {task.pet_name}: {task.description} "
+                    f"({task.duration_minutes} min, {task.priority})"
+                )
+        return "\n".join(lines)

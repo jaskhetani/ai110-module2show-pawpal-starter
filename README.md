@@ -82,14 +82,17 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+The **`Scheduler`** holds a reference to an `Owner` and plans across **all** of that owner's pets. It exposes two core algorithmic features plus a combined planner:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `sort_by_priority()` | Multi-key sort of every pet's tasks: highest `priority` first, ties broken by earliest `due_time`. |
+| Filtering | `filter_by_time_budget(minutes)` | Greedy selection in priority order — keeps adding tasks until the owner's daily `available_minutes` runs out, skipping any that no longer fit. |
+| Daily plan | `build_daily_plan()` / `explain_plan()` | Runs the filter against the owner's budget, then returns the kept tasks in chronological (`due_time`) order; `explain_plan()` also lists what was skipped and why. |
+| Conflict handling | _planned (stretch)_ | Detect overlapping time slots across pets. |
+| Recurring tasks | _planned (stretch)_ | Daily vs. weekly repetition. |
+
+Both `sort_by_priority()` and `filter_by_time_budget()` read from `owner.all_tasks()`, so they consider tasks from **every** pet, not just one.
 
 ## 📸 Demo Walkthrough
 
