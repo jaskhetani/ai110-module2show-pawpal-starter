@@ -142,11 +142,11 @@ requirement fall out naturally instead of being bolted on.
 
 **b. What you would improve**
 
-The greedy time-budget fit is the obvious target. In another iteration I'd add
-real **time-blocking** (assign start/end times and detect overlaps) and
-smarter packing so the day isn't left with unused gaps, plus support for
-**recurring tasks**. (JSON **data persistence** was added afterward as a
-stretch feature — see the README's Data Persistence section.)
+The greedy time-budget fit is the obvious target — smarter packing would avoid
+leaving the day with unused gaps. Further work would add **recurring tasks**
+(daily/weekly repetition) and a fully wired-up Streamlit UI. (**Time-blocking
+conflict detection**, a **next-available-slot** finder, and JSON **data
+persistence** were added afterward as stretch features — see the README.)
 
 **c. Key takeaway**
 

@@ -46,6 +46,8 @@ classDiagram
         +filter_by_time_budget(int minutes) List~Task~
         +build_daily_plan() List~Task~
         +explain_plan() str
+        +detect_conflicts() List
+        +next_available_slot(int minutes, str day_start, str day_end) str
     }
 
     Owner "1" --> "*" Pet : owns

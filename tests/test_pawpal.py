@@ -145,3 +145,61 @@ def test_save_and_load_owner_from_file(owner, tmp_path):
 
 def test_load_owner_missing_file_returns_none(tmp_path):
     assert load_owner(str(tmp_path / "does_not_exist.json")) is None
+
+
+# --- Advanced scheduling: conflicts + next free slot -----------------------
+
+def test_detect_conflicts_finds_cross_pet_overlap():
+    o = Owner("O")
+    dog = Pet("D", "dog")
+    cat = Pet("C", "cat")
+    dog.add_task(Task("Walk", "08:00", 30, "high"))  # 08:00-08:30
+    cat.add_task(Task("Vet", "08:15", 20, "high"))   # 08:15-08:35 -> overlaps
+    o.add_pet(dog)
+    o.add_pet(cat)
+
+    conflicts = Scheduler(o).detect_conflicts()
+    assert len(conflicts) == 1
+    assert {conflicts[0][0].description, conflicts[0][1].description} == {"Walk", "Vet"}
+
+
+def test_detect_conflicts_empty_when_no_overlap(owner):
+    # The fixture's four tasks are all at different, non-overlapping times.
+    assert Scheduler(owner).detect_conflicts() == []
+
+
+def test_completed_tasks_excluded_from_conflicts():
+    o = Owner("O")
+    dog = Pet("D", "dog")
+    walk = Task("Walk", "08:00", 30, "high")
+    vet = Task("Vet", "08:15", 20, "high")
+    dog.add_task(walk)
+    dog.add_task(vet)
+    o.add_pet(dog)
+    scheduler = Scheduler(o)
+
+    assert len(scheduler.detect_conflicts()) == 1
+    walk.mark_complete()  # a completed task no longer occupies its block
+    assert scheduler.detect_conflicts() == []
+
+
+def test_next_available_slot_returns_earliest_gap(owner):
+    # First task starts at 08:00, so a 30-min slot fits from 07:00.
+    assert Scheduler(owner).next_available_slot(30) == "07:00"
+
+
+def test_next_available_slot_skips_occupied_blocks():
+    o = Owner("O")
+    dog = Pet("D", "dog")
+    dog.add_task(Task("A", "07:00", 30, "high"))  # 07:00-07:30
+    dog.add_task(Task("B", "07:30", 30, "high"))  # 07:30-08:00
+    o.add_pet(dog)
+    assert Scheduler(o).next_available_slot(15, day_start="07:00") == "08:00"
+
+
+def test_next_available_slot_returns_none_when_full():
+    o = Owner("O")
+    dog = Pet("D", "dog")
+    dog.add_task(Task("A", "07:00", 60, "high"))  # fills the whole window
+    o.add_pet(dog)
+    assert Scheduler(o).next_available_slot(30, day_start="07:00", day_end="08:00") is None

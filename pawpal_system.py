@@ -22,6 +22,17 @@ from typing import List, Optional
 PRIORITY_WEIGHTS = {"high": 3, "medium": 2, "low": 1}
 
 
+def _time_to_minutes(hhmm: str) -> int:
+    """Convert a 24h ``'HH:MM'`` string to minutes since midnight."""
+    hours, minutes = hhmm.split(":")
+    return int(hours) * 60 + int(minutes)
+
+
+def _minutes_to_time(total_minutes: int) -> str:
+    """Convert minutes since midnight to a zero-padded ``'HH:MM'`` string."""
+    return f"{total_minutes // 60:02d}:{total_minutes % 60:02d}"
+
+
 class Task:
     """A single pet-care activity (a walk, a feeding, a dose of medicine...)."""
 
@@ -264,6 +275,61 @@ class Scheduler:
                     f"({task.duration_minutes} min, {task.priority})"
                 )
         return "\n".join(lines)
+
+    def _time_blocks(self) -> List[tuple]:
+        """Return ``(start_min, end_min, task)`` tuples for pending tasks.
+
+        Each pending task occupies the block that begins at its ``due_time``
+        and lasts ``duration_minutes``. Sorted by start time; spans all pets.
+        """
+        blocks = []
+        for task in self.owner.all_tasks():
+            if task.completed:
+                continue
+            start = _time_to_minutes(task.due_time)
+            blocks.append((start, start + task.duration_minutes, task))
+        return sorted(blocks, key=lambda block: block[0])
+
+    def detect_conflicts(self) -> List[tuple]:
+        """Return ``(earlier_task, later_task)`` pairs whose time blocks overlap.
+
+        Works across every pet, so it flags when the owner would have to be in
+        two places at once (e.g. walking the dog and medicating the cat at the
+        same time).
+        """
+        blocks = self._time_blocks()
+        conflicts: List[tuple] = []
+        for i, (_, a_end, a_task) in enumerate(blocks):
+            for b_start, _, b_task in blocks[i + 1:]:
+                if b_start < a_end:
+                    conflicts.append((a_task, b_task))
+                else:
+                    break  # sorted by start, so nothing later can overlap a
+        return conflicts
+
+    def next_available_slot(
+        self,
+        duration_minutes: int,
+        day_start: str = "07:00",
+        day_end: str = "21:00",
+    ) -> Optional[str]:
+        """Return the earliest ``'HH:MM'`` start where a task of this length fits.
+
+        Scans the free gaps between existing pending time blocks (across all
+        pets) inside ``[day_start, day_end)``. Returns ``None`` if no gap is
+        large enough.
+        """
+        cursor = _time_to_minutes(day_start)
+        end_bound = _time_to_minutes(day_end)
+        for b_start, b_end, _ in self._time_blocks():
+            if b_end <= cursor:
+                continue
+            if b_start - cursor >= duration_minutes:
+                return _minutes_to_time(cursor)
+            cursor = max(cursor, b_end)
+        if end_bound - cursor >= duration_minutes:
+            return _minutes_to_time(cursor)
+        return None
 
 
 # --- Persistence -----------------------------------------------------------

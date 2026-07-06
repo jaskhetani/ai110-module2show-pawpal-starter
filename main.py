@@ -65,6 +65,24 @@ def main() -> None:
     print("\n" + "-" * 60)
     print(scheduler.explain_plan())
 
+    # Advanced scheduling: time-block conflict detection + next free slot.
+    print("\n" + "-" * 60)
+    print("Advanced scheduling checks:")
+    print(f"  Conflicts in current schedule: {len(scheduler.detect_conflicts())}")
+
+    biscuit = owner.get_pet("Biscuit")
+    biscuit.add_task(Task("Vet phone call", "08:15", 20, "medium"))  # overlaps the walk
+    for earlier, later in scheduler.detect_conflicts():
+        print(f"  CONFLICT: {later.pet_name}'s '{later.description}' ({later.due_time}) "
+              f"overlaps {earlier.pet_name}'s '{earlier.description}' ({earlier.due_time})")
+
+    biscuit.remove_task("Vet phone call")  # drop it so it doesn't block itself
+    slot = scheduler.next_available_slot(20)
+    print(f"  Earliest free 20-min slot: {slot}")
+    biscuit.add_task(Task("Vet phone call", slot, 20, "medium"))
+    print(f"  After scheduling the call at {slot}, conflicts: {len(scheduler.detect_conflicts())}")
+    biscuit.remove_task("Vet phone call")  # clean up for the sections below
+
     # Completing a task removes it from future plans and frees up budget.
     print("\n" + "-" * 60)
     print("Marking Biscuit's 'Morning walk' complete and re-planning...")

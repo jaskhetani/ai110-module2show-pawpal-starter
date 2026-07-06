@@ -102,6 +102,13 @@ Daily plan for Jordan (120 min available):
     - Mochi: Brush coat (15 min, low)
 
 ------------------------------------------------------------
+Advanced scheduling checks:
+  Conflicts in current schedule: 0
+  CONFLICT: Biscuit's 'Vet phone call' (08:15) overlaps Biscuit's 'Morning walk' (08:00)
+  Earliest free 20-min slot: 07:00
+  After scheduling the call at 07:00, conflicts: 0
+
+------------------------------------------------------------
 Marking Biscuit's 'Morning walk' complete and re-planning...
 ------------------------------------------------------------
 Daily plan for Jordan (120 min available):
@@ -155,10 +162,23 @@ The **`Scheduler`** holds a reference to an `Owner` and plans across **all** of 
 | Task sorting | `sort_by_priority()` | Multi-key sort of every pet's tasks: highest `priority` first, ties broken by earliest `due_time`. |
 | Filtering | `filter_by_time_budget(minutes)` | Greedy selection in priority order — keeps adding tasks until the owner's daily `available_minutes` runs out, skipping any that no longer fit. |
 | Daily plan | `build_daily_plan()` / `explain_plan()` | Runs the filter against the owner's budget, then returns the kept tasks in chronological (`due_time`) order; `explain_plan()` also lists what was skipped and why. |
-| Conflict handling | _planned (stretch)_ | Detect overlapping time slots across pets. |
+| Conflict handling | `detect_conflicts()` | Flags pending tasks across pets whose time blocks (`due_time` + duration) overlap — the owner can't be in two places at once. |
+| Free-slot search | `next_available_slot(minutes)` | Finds the earliest gap in the day (default 07:00–21:00) that fits a new task without overlapping existing blocks. |
 | Recurring tasks | _planned (stretch)_ | Daily vs. weekly repetition. |
 
 Both `sort_by_priority()` and `filter_by_time_budget()` read from `owner.all_tasks()`, so they consider tasks from **every** pet, not just one.
+
+### Advanced scheduling (stretch)
+
+`detect_conflicts()` and `next_available_slot()` add **time-blocking** on top of the basic planner: each task occupies the block `[due_time, due_time + duration)`, a conflict is any overlap between two blocks (even across different pets), and the slot finder scans the free gaps. From the demo — a vet call added at 08:15 collides with the 08:00 walk, and the finder relocates it to the first open 20-minute slot:
+
+```
+Advanced scheduling checks:
+  Conflicts in current schedule: 0
+  CONFLICT: Biscuit's 'Vet phone call' (08:15) overlaps Biscuit's 'Morning walk' (08:00)
+  Earliest free 20-min slot: 07:00
+  After scheduling the call at 07:00, conflicts: 0
+```
 
 ## 💾 Data Persistence
 

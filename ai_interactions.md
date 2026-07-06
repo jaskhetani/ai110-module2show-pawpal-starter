@@ -10,15 +10,42 @@
 
 **What task did you give the agent?**
 
-<!-- Describe the goal you asked the agent to accomplish -->
+Extend PawPal+ with advanced scheduling that goes beyond the basic sort/filter:
+a **time-blocking conflict detector** (find pending tasks across pets whose
+time blocks overlap) and a **`next_available_slot`** finder (earliest free gap
+that fits a new task). It had to land as one coherent commit — implementation,
+a CLI demonstration, tests, and updated UML/README docs.
 
 **What did the agent do?**
 
-<!-- List the steps the agent took (files edited, commands run, etc.) -->
+Files modified: `pawpal_system.py`, `main.py`, `tests/test_pawpal.py`,
+`diagrams/uml.mmd`, `README.md`, `reflection.md`.
+
+- `pawpal_system.py` — added `_time_to_minutes` / `_minutes_to_time` helpers and
+  three `Scheduler` methods: `_time_blocks()`, `detect_conflicts()`, and
+  `next_available_slot(duration, day_start, day_end)`.
+- `main.py` — added an "Advanced scheduling checks" section that reports current
+  conflicts, injects an overlapping "Vet phone call" to trigger one, finds the
+  earliest free 20-minute slot, reschedules the call there, and cleans up.
+- `tests/test_pawpal.py` — added 6 tests (cross-pet overlap, no-overlap,
+  completed-task exclusion, earliest gap, skipping occupied blocks, and
+  none-when-full).
+- Updated the UML `Scheduler` class and the README (Smarter Scheduling table +
+  an "Advanced scheduling" example + refreshed sample output), and ran
+  `python main.py` and `pytest` (19 passing).
 
 **What did you have to verify or fix manually?**
 
-<!-- Describe anything the agent got wrong or that required human review -->
+- Confirmed the early `break` in `detect_conflicts()` is sound: because blocks
+  are sorted by start time, once a later block starts at/after the current
+  block's end, nothing after it can overlap either.
+- Caught that `next_available_slot()` would otherwise treat the task being
+  placed as its own obstacle, so the demo removes the temporary task before
+  computing the slot.
+- Verified `_time_blocks()` excludes completed tasks (a done task shouldn't
+  create a phantom conflict) and that the demo's temporary task is removed so
+  the later mark-complete and persistence sections still produce identical
+  output.
 
 ---
 
