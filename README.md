@@ -1,6 +1,6 @@
 # PawPal+ (Module 2 Project)
 
-**PawPal+** is a Python pet-care planning system. It helps a busy owner stay on top of daily care by modeling **owners, pets, and tasks** as classes and using a **`Scheduler`** to sort tasks by priority, fit them into the owner's available time, and produce an explained daily plan across all of their pets. Run the [`main.py`](main.py) command-line demo to see the whole workflow end to end.
+**PawPal+** is a Python pet-care planning system. It helps a busy owner stay on top of daily care by modeling **owners, pets, and tasks** as classes and using a **`Scheduler`** to sort tasks by priority, fit them into the owner's available time, and produce an explained daily plan across all of their pets. Run the [`main.py`](main.py) command-line demo, or launch the interactive Streamlit app (`streamlit run app.py`), to see the whole workflow end to end.
 
 ## Scenario
 
@@ -45,8 +45,9 @@ pip install -r requirements.txt
 ### Running the demo and tests
 
 ```bash
-python main.py       # run the CLI demo (builds the sample world and plans the day)
-pytest               # run the full test suite from the project root
+python main.py         # CLI demo (builds the sample world and plans the day)
+streamlit run app.py   # interactive web UI (same backend as the CLI)
+pytest                 # full test suite from the project root
 ```
 
 ### Suggested workflow
@@ -125,6 +126,23 @@ Daily plan for Jordan (120 min available):
 💾 Persistence check:
 Saved to pawpal_data.json and reloaded: 2 pets, 7 tasks, 'Morning walk' still marked complete = True.
 ```
+
+## 🖱️ Interactive app (Streamlit)
+
+[`app.py`](app.py) is a Streamlit front end wired to the **same** `pawpal_system` backend as the CLI, so anything the tests and CLI exercise you can drive in the browser: add pets and tasks, generate a plan, detect conflicts, find a free slot, mark tasks done, and save/load JSON.
+
+```bash
+streamlit run app.py
+```
+
+**Manual test checklist** (fastest path uses the demo data):
+
+1. In the sidebar, click **Load demo data** → the roster fills with Jordan's 2 pets and 7 tasks.
+2. Click **🗓️ Generate daily plan** → the "sorted by priority" table lists **Breakfast → Morning walk → Thyroid meds** first (all high priority), and the plan shows **110/120 min used** with **Brush coat** skipped as over budget.
+3. Under **Find a free slot**, enter `20` and click **Find earliest free slot** → it returns **07:00**.
+4. In **Tasks**, add `Vet call` to *Biscuit* at due time `08:15` for `20` min, then regenerate the plan → a **⚠️ conflict** with *Morning walk* (08:00) is reported.
+5. Under **Mark a task complete**, pick *Biscuit: Morning walk*, click **Mark complete** → its roster row shows ✅, and regenerating the plan drops it and frees budget.
+6. Sidebar → **💾 Save to JSON**, then **Reset (empty)**, then **📂 Load from JSON** → the pets and tasks (including completion status) come back, proving persistence.
 
 ## 🧪 Testing PawPal+
 
