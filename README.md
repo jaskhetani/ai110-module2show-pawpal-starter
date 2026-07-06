@@ -109,18 +109,31 @@ Daily plan for Jordan (120 min available):
 
 ## 🧪 Testing PawPal+
 
+Run the full suite from the project root:
+
 ```bash
-# Run the full test suite:
 pytest
-
-# Run with coverage:
-pytest --cov
 ```
 
-Sample test output:
+**Test coverage summary** — [`tests/test_pawpal.py`](tests/test_pawpal.py) has 10 passing tests:
+
+- **Task** — `mark_complete()` flips completion status; `priority_weight()` ranks high/medium/low and falls back to `0` for unknown labels.
+- **Pet / Owner** — `add_task()` stamps the pet's name onto the task; `pending_tasks()` excludes completed tasks; `Owner.all_tasks()` flattens tasks from every pet.
+- **Scheduler — sorting** — `sort_by_priority()` puts high-priority tasks first across *both* pets and breaks ties by earliest due time.
+- **Scheduler — filtering / planning** — `filter_by_time_budget()` never exceeds the budget and drops tasks that no longer fit; `build_daily_plan()` returns tasks in chronological order; completing a task frees budget so a previously-skipped task reappears in the re-plan.
+
+Sample output:
 
 ```
-# Paste your pytest output here
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0
+rootdir: <project root>
+plugins: anyio-4.14.1
+collected 10 items
+
+tests\test_pawpal.py ..........                                          [100%]
+
+============================= 10 passed in 0.11s ==============================
 ```
 
 ## 📐 Smarter Scheduling
