@@ -22,6 +22,16 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## 🧱 System Design
+
+PawPal+ is built from four classes (see [`diagrams/uml.mmd`](diagrams/uml.mmd) for the full class diagram). The domain model lives in [`pawpal_system.py`](pawpal_system.py):
+
+- **`Task`** — one care activity. Holds `description`, `due_time` (a 24h `"HH:MM"` string), `duration_minutes`, `priority` (`low` / `medium` / `high`), and a `completed` flag. `mark_complete()` closes it out, and `priority_weight()` turns the priority label into a sortable number (high = 3 … low = 1).
+- **`Pet`** — a pet (`name`, `species`) that owns a list of `Task`s. Methods to `add_task()` (which also stamps the task with the pet's name), `remove_task()`, `list_tasks()`, and `pending_tasks()`.
+- **`Owner`** — a person (`name`) with a daily `available_minutes` budget and a list of `Pet`s. Methods `add_pet()`, `get_pet()`, and `all_tasks()`, which flattens every pet's tasks into one list.
+
+The **`Scheduler`** — the class that plans across *all* of an owner's pets — is described under [Smarter Scheduling](#-smarter-scheduling) below.
+
 ## Getting started
 
 ### Setup
