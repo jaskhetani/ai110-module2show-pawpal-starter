@@ -203,3 +203,23 @@ def test_next_available_slot_returns_none_when_full():
     dog.add_task(Task("A", "07:00", 60, "high"))  # fills the whole window
     o.add_pet(dog)
     assert Scheduler(o).next_available_slot(30, day_start="07:00", day_end="08:00") is None
+
+
+# --- Explanation + formatting ---------------------------------------------
+
+def test_explain_plan_lists_scheduled_and_skipped(owner):
+    text = Scheduler(owner).explain_plan()
+    assert "Walk" in text          # a scheduled task appears
+    assert "Skipped" in text       # the over-budget "Play" is reported as skipped
+    assert "Play" in text
+
+
+def test_formatting_tables_include_task_data(owner):
+    pytest.importorskip("tabulate")  # skip if the formatting dependency is absent
+    from formatting import format_plan, format_roster
+
+    roster = format_roster(owner)
+    assert "Rex" in roster and "Tom" in roster and "Walk" in roster
+
+    plan = format_plan(Scheduler(owner))
+    assert "Walk" in plan and "min used" in plan

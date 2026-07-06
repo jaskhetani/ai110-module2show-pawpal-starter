@@ -61,26 +61,28 @@ pytest               # run the full test suite from the project root
 
 ## 🖥️ Sample Output
 
-Below is the output of `python main.py`, which builds one owner (Jordan), two pets (Biscuit the dog and Mochi the cat), and seven tasks, then uses the `Scheduler` to sort and plan the day:
+Below is the output of `python main.py`. It builds one owner (Jordan), two pets (Biscuit the dog, Mochi the cat), and seven tasks, then uses the `Scheduler` to sort and plan the day — rendered with `tabulate` tables and emoji (see [Professional formatting](#-professional-formatting-stretch)):
 
 ```
 ============================================================
-PawPal+ - Daily Care Planner
+🐾 PawPal+ — Daily Care Planner
 ============================================================
-Owner: Jordan (daily time budget: 120 min)
-  Biscuit (dog) - 4 task(s)
-    - [ ] Breakfast (10 min, high, due 07:30)
-    - [ ] Morning walk (30 min, high, due 08:00)
-    - [ ] Fetch / enrichment (25 min, low, due 16:00)
-    - [ ] Evening walk (30 min, medium, due 18:00)
-  Mochi (cat) - 3 task(s)
-    - [ ] Litter cleanup (10 min, medium, due 07:45)
-    - [ ] Thyroid meds (5 min, high, due 09:00)
-    - [ ] Brush coat (15 min, low, due 19:00)
+Owner: Jordan  (daily time budget: 120 min)
 
-------------------------------------------------------------
-All tasks across pets, sorted by priority then due time:
-------------------------------------------------------------
+📋 Care roster
+╭───────────┬────────────────────┬───────┬────────────┬────────────┬────────╮
+│ Pet       │ Task               │ Due   │ Duration   │ Priority   │ Done   │
+├───────────┼────────────────────┼───────┼────────────┼────────────┼────────┤
+│ 🐕 Biscuit │ Breakfast          │ 07:30 │ 10 min     │ 🔴 high     │ ⬜      │
+│ 🐕 Biscuit │ Morning walk       │ 08:00 │ 30 min     │ 🔴 high     │ ⬜      │
+│ 🐕 Biscuit │ Fetch / enrichment │ 16:00 │ 25 min     │ 🟢 low      │ ⬜      │
+│ 🐕 Biscuit │ Evening walk       │ 18:00 │ 30 min     │ 🟡 medium   │ ⬜      │
+│ 🐈 Mochi   │ Litter cleanup     │ 07:45 │ 10 min     │ 🟡 medium   │ ⬜      │
+│ 🐈 Mochi   │ Thyroid meds       │ 09:00 │ 5 min      │ 🔴 high     │ ⬜      │
+│ 🐈 Mochi   │ Brush coat         │ 19:00 │ 15 min     │ 🟢 low      │ ⬜      │
+╰───────────┴────────────────────┴───────┴────────────┴────────────┴────────╯
+
+🔢 Tasks across pets, sorted by priority then due time:
   Biscuit  [ ] Breakfast (10 min, high, due 07:30)
   Biscuit  [ ] Morning walk (30 min, high, due 08:00)
   Mochi    [ ] Thyroid meds (5 min, high, due 09:00)
@@ -89,7 +91,7 @@ All tasks across pets, sorted by priority then due time:
   Biscuit  [ ] Fetch / enrichment (25 min, low, due 16:00)
   Mochi    [ ] Brush coat (15 min, low, due 19:00)
 
-------------------------------------------------------------
+🗓️  Today's plan (explained):
 Daily plan for Jordan (120 min available):
   1. 07:30  Biscuit: Breakfast (10 min, high priority)
   2. 07:45  Mochi: Litter cleanup (10 min, medium priority)
@@ -101,26 +103,26 @@ Daily plan for Jordan (120 min available):
   Skipped (over budget):
     - Mochi: Brush coat (15 min, low)
 
-------------------------------------------------------------
-Advanced scheduling checks:
+⚠️  Advanced scheduling checks:
   Conflicts in current schedule: 0
   CONFLICT: Biscuit's 'Vet phone call' (08:15) overlaps Biscuit's 'Morning walk' (08:00)
   Earliest free 20-min slot: 07:00
   After scheduling the call at 07:00, conflicts: 0
 
-------------------------------------------------------------
-Marking Biscuit's 'Morning walk' complete and re-planning...
-------------------------------------------------------------
-Daily plan for Jordan (120 min available):
-  1. 07:30  Biscuit: Breakfast (10 min, high priority)
-  2. 07:45  Mochi: Litter cleanup (10 min, medium priority)
-  3. 09:00  Mochi: Thyroid meds (5 min, high priority)
-  4. 16:00  Biscuit: Fetch / enrichment (25 min, low priority)
-  5. 18:00  Biscuit: Evening walk (30 min, medium priority)
-  6. 19:00  Mochi: Brush coat (15 min, low priority)
-  Time used: 95/120 min.
+✅ Marking Biscuit's 'Morning walk' complete and re-planning...
+╭─────┬────────┬─────────┬────────────────────┬────────────┬────────────╮
+│   # │ Time   │ Pet     │ Task               │ Duration   │ Priority   │
+├─────┼────────┼─────────┼────────────────────┼────────────┼────────────┤
+│   1 │ 07:30  │ Biscuit │ Breakfast          │ 10 min     │ 🔴 high     │
+│   2 │ 07:45  │ Mochi   │ Litter cleanup     │ 10 min     │ 🟡 medium   │
+│   3 │ 09:00  │ Mochi   │ Thyroid meds       │ 5 min      │ 🔴 high     │
+│   4 │ 16:00  │ Biscuit │ Fetch / enrichment │ 25 min     │ 🟢 low      │
+│   5 │ 18:00  │ Biscuit │ Evening walk       │ 30 min     │ 🟡 medium   │
+│   6 │ 19:00  │ Mochi   │ Brush coat         │ 15 min     │ 🟢 low      │
+╰─────┴────────┴─────────┴────────────────────┴────────────┴────────────╯
+⏱️  95/120 min used
 
-------------------------------------------------------------
+💾 Persistence check:
 Saved to pawpal_data.json and reloaded: 2 pets, 7 tasks, 'Morning walk' still marked complete = True.
 ```
 
@@ -132,12 +134,15 @@ Run the full suite from the project root:
 pytest
 ```
 
-**Test coverage summary** — [`tests/test_pawpal.py`](tests/test_pawpal.py) has 10 passing tests:
+**Test coverage summary** — [`tests/test_pawpal.py`](tests/test_pawpal.py) has 21 passing tests:
 
 - **Task** — `mark_complete()` flips completion status; `priority_weight()` ranks high/medium/low and falls back to `0` for unknown labels.
 - **Pet / Owner** — `add_task()` stamps the pet's name onto the task; `pending_tasks()` excludes completed tasks; `Owner.all_tasks()` flattens tasks from every pet.
 - **Scheduler — sorting** — `sort_by_priority()` puts high-priority tasks first across *both* pets and breaks ties by earliest due time.
-- **Scheduler — filtering / planning** — `filter_by_time_budget()` never exceeds the budget and drops tasks that no longer fit; `build_daily_plan()` returns tasks in chronological order; completing a task frees budget so a previously-skipped task reappears in the re-plan.
+- **Scheduler — filtering / planning** — `filter_by_time_budget()` never exceeds the budget and drops tasks that no longer fit; `build_daily_plan()` returns tasks in chronological order; completing a task frees budget so a previously-skipped task reappears in the re-plan; `explain_plan()` lists both scheduled and skipped tasks.
+- **Scheduler — conflicts / slots (stretch)** — `detect_conflicts()` finds cross-pet time-block overlaps and ignores completed tasks; `next_available_slot()` returns the earliest gap, skips occupied blocks, and returns `None` when the day is full.
+- **Persistence (stretch)** — dict round-trips preserve completion status and pet back-references; `save_owner`/`load_owner` survive a file round trip; a missing file loads as `None`.
+- **Formatting (stretch)** — `format_roster()`/`format_plan()` render the expected task data (skipped automatically if `tabulate` is not installed).
 
 Sample output:
 
@@ -146,11 +151,11 @@ Sample output:
 platform win32 -- Python 3.13.7, pytest-9.1.1, pluggy-1.6.0
 rootdir: <project root>
 plugins: anyio-4.14.1
-collected 10 items
+collected 21 items
 
-tests\test_pawpal.py ..........                                          [100%]
+tests\test_pawpal.py .....................                               [100%]
 
-============================= 10 passed in 0.11s ==============================
+============================= 21 passed in 0.41s ==============================
 ```
 
 ## 📐 Smarter Scheduling
@@ -190,6 +195,19 @@ PawPal+ can save an owner — with every pet and task — to JSON and load it ba
 The [`main.py`](main.py) demo saves after planning and immediately reloads to confirm the round trip — including that a completed task stays completed. The generated `pawpal_data.json` is git-ignored.
 
 **Files modified for this feature:** [`pawpal_system.py`](pawpal_system.py) (`to_dict`/`from_dict` on `Task`/`Pet`/`Owner` + module-level `save_owner`/`load_owner`), [`main.py`](main.py) (save/reload demo), [`tests/test_pawpal.py`](tests/test_pawpal.py) (round-trip, file, and missing-file tests), and `.gitignore`.
+
+## 🎨 Professional formatting (stretch)
+
+CLI output is rendered with the [`tabulate`](https://pypi.org/project/tabulate/) library plus emoji, kept in a dedicated [`formatting.py`](formatting.py) module so the core logic in `pawpal_system.py` stays presentation-free.
+
+- **Library:** `tabulate` (added to `requirements.txt`), using its `rounded_outline` table format.
+- **Functions:** `format_roster(owner)` renders every pet's tasks as a table; `format_plan(scheduler)` renders the daily plan as a numbered table with a time-used footer.
+- **Emoji:** species (🐕 / 🐈 / 🐾), priority (🔴 high / 🟡 medium / 🟢 low), and completion (✅ / ⬜), plus section headers (📋 🔢 🗓️ ⚠️ ✅ 💾).
+- [`main.py`](main.py) reconfigures stdout to UTF-8 so emoji and box-drawing characters render correctly on Windows.
+
+See the **Sample Output** section above for the rendered tables.
+
+**Files modified for this feature:** new [`formatting.py`](formatting.py), [`main.py`](main.py) (uses the formatters + UTF-8 stdout), `requirements.txt` (add `tabulate`), and [`tests/test_pawpal.py`](tests/test_pawpal.py) (formatting test).
 
 ## 📸 Demo Walkthrough
 

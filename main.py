@@ -2,11 +2,14 @@
 
 Builds a small but complete scenario -- one owner, two pets, and several
 care tasks -- then uses the Scheduler to sort tasks by priority and to build
-an explained daily plan. Run with:
+an explained daily plan, rendered with tabulate tables + emoji. Run with:
 
     python main.py
 """
 
+import sys
+
+from formatting import format_plan, format_roster
 from pawpal_system import (
     DEFAULT_DATA_FILE,
     Owner,
@@ -16,6 +19,10 @@ from pawpal_system import (
     load_owner,
     save_owner,
 )
+
+# Emoji and box-drawing characters need a UTF-8 stdout (e.g. on Windows).
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 
 def build_demo_owner() -> Owner:
@@ -38,36 +45,26 @@ def build_demo_owner() -> Owner:
     return owner
 
 
-def print_roster(owner: Owner) -> None:
-    """Print the owner, their pets, and each pet's tasks."""
-    print(f"Owner: {owner.name} (daily time budget: {owner.available_minutes} min)")
-    for pet in owner.pets:
-        print(f"  {pet}")
-        for task in pet.list_tasks():
-            print(f"    - {task}")
-
-
 def main() -> None:
     owner = build_demo_owner()
     scheduler = Scheduler(owner)
 
     print("=" * 60)
-    print("PawPal+ - Daily Care Planner")
+    print("🐾 PawPal+ — Daily Care Planner")
     print("=" * 60)
-    print_roster(owner)
+    print(f"Owner: {owner.name}  (daily time budget: {owner.available_minutes} min)\n")
+    print("📋 Care roster")
+    print(format_roster(owner))
 
-    print("\n" + "-" * 60)
-    print("All tasks across pets, sorted by priority then due time:")
-    print("-" * 60)
+    print("\n🔢 Tasks across pets, sorted by priority then due time:")
     for task in scheduler.sort_by_priority():
         print(f"  {task.pet_name:<8} {task}")
 
-    print("\n" + "-" * 60)
+    print("\n🗓️  Today's plan (explained):")
     print(scheduler.explain_plan())
 
     # Advanced scheduling: time-block conflict detection + next free slot.
-    print("\n" + "-" * 60)
-    print("Advanced scheduling checks:")
+    print("\n⚠️  Advanced scheduling checks:")
     print(f"  Conflicts in current schedule: {len(scheduler.detect_conflicts())}")
 
     biscuit = owner.get_pet("Biscuit")
@@ -84,18 +81,16 @@ def main() -> None:
     biscuit.remove_task("Vet phone call")  # clean up for the sections below
 
     # Completing a task removes it from future plans and frees up budget.
-    print("\n" + "-" * 60)
-    print("Marking Biscuit's 'Morning walk' complete and re-planning...")
+    print("\n✅ Marking Biscuit's 'Morning walk' complete and re-planning...")
     biscuit = owner.get_pet("Biscuit")
     for task in biscuit.list_tasks():
         if task.description == "Morning walk":
             task.mark_complete()
-    print("-" * 60)
-    print(scheduler.explain_plan())
+    print(format_plan(scheduler))
 
     # Persistence: save the current state to JSON and load it back to prove
     # pets, tasks, and completion status survive between runs.
-    print("\n" + "-" * 60)
+    print("\n💾 Persistence check:")
     save_owner(owner, DEFAULT_DATA_FILE)
     reloaded = load_owner(DEFAULT_DATA_FILE)
     walk_done = any(

@@ -2,6 +2,7 @@ classDiagram
     %% PawPal+ core OOP design.
     %% This diagram is kept in sync with pawpal_system.py.
     %% Module-level JSON helpers: save_owner(owner, path) and load_owner(path) -> Owner.
+    %% Presentation layer in formatting.py: format_roster(owner) and format_plan(scheduler) render tables via tabulate.
 
     class Task {
         +str description

@@ -53,15 +53,22 @@ Files modified: `pawpal_system.py`, `main.py`, `tests/test_pawpal.py`,
 
 > Compare two different prompts (or two different models) on the same task.
 
-| | Option A | Option B |
-|-|----------|----------|
-| **Model / tool used** | | |
-| **Prompt** | | |
-| **Response summary** | | |
-| **What was useful** | | |
-| **Problems noticed** | | |
-| **Decision** | | |
+**Task for both:** design the PawPal+ `Scheduler`'s task-selection algorithm.
+
+| | Option A — vague prompt | Option B — specification-first prompt |
+|-|-------------------------|---------------------------------------|
+| **Model / tool used** | Claude (Opus) | Claude (Opus) |
+| **Prompt** | "Write a scheduler that builds a good daily plan for a pet owner." | "Sort tasks across **all** of an owner's pets by priority, then by due time; greedily fit them into `owner.available_minutes`; keep selection separate from presentation; make each step unit-testable." |
+| **Response summary** | One monolithic function that sorted by priority and printed a plan, mixing selection, ordering, and printing — and only over a single pet's tasks. | Three focused methods on a `Scheduler` that takes an `Owner`: `sort_by_priority()`, `filter_by_time_budget()`, and `build_daily_plan()`, each independently callable. |
+| **What was useful** | Fast starting point; the "sort by priority" instinct was right. | Clean separation of concerns; cross-pet by construction; trivially testable. |
+| **Problems noticed** | No time budget; single pet only; logic tangled with `print`; hard to test. | Slightly more verbose; the tie-break rule was unspecified, so I had to pin it to "earliest due time." |
+| **Decision** | Rejected as-is. | Accepted — this is the implemented design. |
 
 **Which approach did you use in your final implementation and why?**
 
-<!-- Your conclusion -->
+I used **Option B**. Handing the model the explicit constraints (and the grading
+rubric) up front produced modular, testable code, whereas the vague prompt
+produced a plausible but monolithic, single-pet solution that would have failed
+the "across multiple pets" requirement. I verified Option B by writing tests
+(`tests/test_pawpal.py`) that encode each constraint — sort order, tie-breaks,
+budget limits — rather than trusting the generated code by eye.
